@@ -1,17 +1,12 @@
 #include "ft_traceroute.h"
 
-static void print_help(void)
+static int exit_traceroute(char const* strerr, Traceroute* traceroute)
 {
-	printf("Usage: traceroute [OPTION...] HOST\n");
-	printf("Print the route packets trace to network host.\n\n");
-	printf("  -?, --help                  give this help list\n");
-}
-
-static int exit_traceroute(char const* errstr)
-{
-	if (errstr)
-		printf("ft_ping: %s\n", errstr);
-	return errstr ? 1 : 0;
+	if (strerr)
+		printf("ft_traceroute: %s\n", strerr);
+	if (traceroute->socket != -1)
+		close(traceroute->socket);
+	return strerr ? 1 : 0;
 }
 
 static void parse_args(int argc, char** argv, Traceroute* traceroute)
@@ -25,17 +20,10 @@ static void parse_args(int argc, char** argv, Traceroute* traceroute)
 	}
 }
 
-static void init_traceroute(Traceroute* traceroute)
-{
-	traceroute->flags = 0;
-}
-
 int main(int argc, char** argv)
 {
 	Traceroute traceroute;
 
-	if (argc < 2)
-		return exit_traceroute("missing host operand");
 	init_traceroute(&traceroute);
 	parse_args(argc, argv, &traceroute);
 	if (traceroute.flags & HELP)
@@ -43,5 +31,9 @@ int main(int argc, char** argv)
 		print_help();
 		return 0;
 	}
+	if (!traceroute.host)
+		return exit_traceroute("Missing host operand", &traceroute);
+	if (!init_socket(&traceroute))
+		return exit_traceroute(traceroute.strerr, &traceroute);
 	return 0;
 }
