@@ -4,11 +4,12 @@ void init_traceroute(Traceroute* traceroute)
 {
 	traceroute->host = NULL;
 	traceroute->flags = 0;
-	traceroute->socket = -1;
+	traceroute->udpsock = -1;
+	traceroute->rawsock = -1;
 	traceroute->strerr = NULL;
 }
 
-int init_socket(Traceroute* traceroute)
+int init_sockets(Traceroute* traceroute)
 {
 	struct addrinfo hints;
 	struct addrinfo* res;
@@ -26,9 +27,10 @@ int init_socket(Traceroute* traceroute)
 		return 0;
 	}
 	memcpy(&traceroute->host_addr, res->ai_addr, sizeof(struct sockaddr_in));
-	traceroute->socket = socket(hints.ai_family, hints.ai_socktype, hints.ai_protocol);
+	traceroute->udpsock = socket(hints.ai_family, hints.ai_socktype, hints.ai_protocol);
+	traceroute->rawsock = socket(hints.ai_family, SOCK_RAW, IPPROTO_ICMP);
 	freeaddrinfo(res);
-	if (traceroute->socket == -1)
+	if (traceroute->udpsock == -1 || traceroute->rawsock == -1)
 	{
 		traceroute->strerr = strerror(errno);
 		return 0;

@@ -4,8 +4,10 @@ static int exit_traceroute(char const* strerr, Traceroute* traceroute)
 {
 	if (strerr)
 		printf("ft_traceroute: %s\n", strerr);
-	if (traceroute->socket != -1)
-		close(traceroute->socket);
+	if (traceroute->udpsock != -1)
+		close(traceroute->udpsock);
+	if (traceroute->rawsock != -1)
+		close(traceroute->rawsock);
 	return strerr ? 1 : 0;
 }
 
@@ -33,7 +35,7 @@ int main(int argc, char** argv)
 	}
 	if (!traceroute.host)
 		return exit_traceroute("Missing host operand", &traceroute);
-	if (!init_socket(&traceroute))
+	if (!init_sockets(&traceroute))
 		return exit_traceroute(traceroute.strerr, &traceroute);
 	// TODO: replace placeholder number (64) with variable value
 	printf("traceroute to %s (%s), 64 hops max\n", traceroute.host, traceroute.host_ipstr);

@@ -18,14 +18,15 @@ typedef struct Traceroute
 {
 	char* host;
 	uint8_t flags;
-	int socket;
+	int udpsock;
+	int rawsock;
 	struct sockaddr_in host_addr;
 	char* host_ipstr;
 	char const* strerr;
 } Traceroute;
 
 void init_traceroute(Traceroute* traceroute);
-int init_socket(Traceroute* traceroute);
+int init_sockets(Traceroute* traceroute);
 
 void print_help(void);
 
