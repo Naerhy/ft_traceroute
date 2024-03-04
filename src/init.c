@@ -18,7 +18,7 @@ int init_socket(Traceroute* traceroute)
 	hints.ai_family = AF_INET;
 	hints.ai_socktype = SOCK_DGRAM;
 	hints.ai_protocol = IPPROTO_UDP;
-	retgai = getaddrinfo(traceroute->host, NULL, &hints, &res);
+	retgai = getaddrinfo(traceroute->host, "33434", &hints, &res);
 	if (retgai)
 	{
 		// FIXME: still reachable leaks in Valgrind

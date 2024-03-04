@@ -35,5 +35,7 @@ int main(int argc, char** argv)
 		return exit_traceroute("Missing host operand", &traceroute);
 	if (!init_socket(&traceroute))
 		return exit_traceroute(traceroute.strerr, &traceroute);
-	return 0;
+	// TODO: replace placeholder number (64) with variable value
+	printf("traceroute to %s (%s), 64 hops max\n", traceroute.host, traceroute.host_ipstr);
+	return exit_traceroute(NULL, &traceroute);
 }
