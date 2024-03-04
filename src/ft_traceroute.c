@@ -1,43 +1,43 @@
 #include "ft_traceroute.h"
 
-static int exit_traceroute(char const* strerr, Traceroute* traceroute)
+static int exit_traceroute(char const* strerr, Tr* tr)
 {
 	if (strerr)
 		printf("ft_traceroute: %s\n", strerr);
-	if (traceroute->udpsock != -1)
-		close(traceroute->udpsock);
-	if (traceroute->rawsock != -1)
-		close(traceroute->rawsock);
+	if (tr->udpsock != -1)
+		close(tr->udpsock);
+	if (tr->rawsock != -1)
+		close(tr->rawsock);
 	return strerr ? 1 : 0;
 }
 
-static void parse_args(int argc, char** argv, Traceroute* traceroute)
+static void parse_args(int argc, char** argv, Tr* tr)
 {
 	for (int i = 1; i < argc; i++)
 	{
 		if (!strcmp(*(argv + i), "-?") || !strcmp(*(argv + i), "--help"))
-			traceroute->flags |= HELP;
+			tr->flags |= HELP;
 		else
-			traceroute->host = *(argv + i);
+			tr->host = *(argv + i);
 	}
 }
 
 int main(int argc, char** argv)
 {
-	Traceroute traceroute;
+	Tr tr;
 
-	init_traceroute(&traceroute);
-	parse_args(argc, argv, &traceroute);
-	if (traceroute.flags & HELP)
+	init_traceroute(&tr);
+	parse_args(argc, argv, &tr);
+	if (tr.flags & HELP)
 	{
 		print_help();
 		return 0;
 	}
-	if (!traceroute.host)
-		return exit_traceroute("Missing host operand", &traceroute);
-	if (!init_sockets(&traceroute))
-		return exit_traceroute(traceroute.strerr, &traceroute);
+	if (!tr.host)
+		return exit_traceroute("Missing host operand", &tr);
+	if (!init_sockets(&tr))
+		return exit_traceroute(tr.strerr, &tr);
 	// TODO: replace placeholder number (64) with variable value
-	printf("traceroute to %s (%s), 64 hops max\n", traceroute.host, traceroute.host_ipstr);
-	return exit_traceroute(NULL, &traceroute);
+	printf("traceroute to %s (%s), 64 hops max\n", tr.host, tr.host_ipstr);
+	return exit_traceroute(NULL, &tr);
 }

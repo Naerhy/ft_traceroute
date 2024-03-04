@@ -14,7 +14,7 @@
 
 #define HELP (1 << 0)
 
-typedef struct Traceroute
+typedef struct Tr
 {
 	char* host;
 	uint8_t flags;
@@ -23,10 +23,10 @@ typedef struct Traceroute
 	struct sockaddr_in host_addr;
 	char* host_ipstr;
 	char const* strerr;
-} Traceroute;
+} Tr;
 
-void init_traceroute(Traceroute* traceroute);
-int init_sockets(Traceroute* traceroute);
+void init_traceroute(Tr* tr);
+int init_sockets(Tr* tr);
 
 void print_help(void);
 
