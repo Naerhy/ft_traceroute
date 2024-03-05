@@ -4,6 +4,8 @@ void init_traceroute(Tr* tr)
 {
 	tr->host = NULL;
 	tr->flags = 0;
+	tr->hops = 64;
+	tr->ttl = 1;
 	tr->udpsock = -1;
 	tr->rawsock = -1;
 	tr->strerr = NULL;

@@ -18,6 +18,8 @@ typedef struct Tr
 {
 	char* host;
 	uint8_t flags;
+	uint8_t hops;
+	uint8_t ttl;
 	int udpsock;
 	int rawsock;
 	struct sockaddr_in host_addr;
@@ -27,6 +29,8 @@ typedef struct Tr
 
 void init_traceroute(Tr* tr);
 int init_sockets(Tr* tr);
+
+int send_udp(Tr* tr);
 
 void print_help(void);
 
