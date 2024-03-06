@@ -5,10 +5,13 @@
 #include <errno.h>
 #include <netdb.h>
 #include <netinet/in.h>
+#include <netinet/ip_icmp.h>
 #include <sys/socket.h>
 #include <stdio.h>
 #include <string.h>
+#include <sys/select.h>
 #include <sys/socket.h>
+#include <sys/time.h>
 #include <sys/types.h>
 #include <unistd.h>
 
@@ -31,6 +34,8 @@ void init_traceroute(Tr* tr);
 int init_sockets(Tr* tr);
 
 int send_udp(Tr* tr);
+
+int recv_icmp(Tr* tr, size_t index, int* print_addr);
 
 void print_help(void);
 
