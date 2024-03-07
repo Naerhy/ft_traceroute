@@ -8,6 +8,7 @@ void init_traceroute(Tr* tr)
 	tr->ttl = 1;
 	tr->udpsock = -1;
 	tr->rawsock = -1;
+	tr->reached_dest = 0;
 	tr->strerr = NULL;
 }
 

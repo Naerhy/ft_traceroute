@@ -15,6 +15,8 @@
 #include <sys/types.h>
 #include <unistd.h>
 
+#define IP_HDR_MIN_SIZE 20
+#define IP_HDR_MAX_SIZE 60
 #define HELP (1 << 0)
 
 typedef struct Tr
@@ -27,6 +29,7 @@ typedef struct Tr
 	int rawsock;
 	struct sockaddr_in host_addr;
 	char* host_ipstr;
+	int reached_dest;
 	char const* strerr;
 } Tr;
 

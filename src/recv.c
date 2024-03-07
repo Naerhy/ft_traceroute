@@ -1,5 +1,30 @@
 #include "ft_traceroute.h"
 
+static uint16_t sw16(uint16_t v)
+{
+	return (v << 8) | (v >> 8);
+}
+
+// FIXME: check that identifier in packet is equal to our sent PID
+static int valid_icmp_msg(char* buffer, ssize_t nbrecv)
+{
+	struct ip* ip;
+	struct icmp* icmp;
+	uint8_t hdrlen;
+
+	ip = (struct ip*)buffer;
+	if (nbrecv < IP_HDR_MIN_SIZE || nbrecv < sw16(ip->ip_len))
+		return 0;
+	hdrlen = ip->ip_hl * 4;
+	if (hdrlen < IP_HDR_MIN_SIZE || hdrlen > IP_HDR_MAX_SIZE
+			|| hdrlen + ICMP_MINLEN > sw16(ip->ip_len) || ip->ip_p != IPPROTO_ICMP)
+		return 0;
+	icmp = (struct icmp*)(buffer + hdrlen);
+	if (icmp->icmp_type != ICMP_TIMXCEED && icmp->icmp_type != ICMP_UNREACH)
+		return 0;
+	return icmp->icmp_type == ICMP_TIMXCEED ? 1 : 2;
+}
+
 int recv_icmp(Tr* tr, size_t index, int* print_addr)
 {
 	fd_set fds;
@@ -8,10 +33,11 @@ int recv_icmp(Tr* tr, size_t index, int* print_addr)
 	struct timeval timeout;
 	int loop;
 	int retselect;
-	char buffer[1000];
+	char buffer[IP_MSS];
 	struct sockaddr_in recvaddr;
 	socklen_t recvaddrlen;
 	ssize_t nbrecv;
+	int icmp_msg;
 
 	FD_ZERO(&fds);
 	FD_SET(tr->rawsock, &fds);
@@ -22,6 +48,7 @@ int recv_icmp(Tr* tr, size_t index, int* print_addr)
 	loop = 1;
 	while (loop)
 	{
+		// TODO: subtract current elapsed time from timeout
 		retselect = select(tr->rawsock + 1, &fds, NULL, NULL, &timeout);
 		if (retselect == -1)
 			return 0;
@@ -35,32 +62,39 @@ int recv_icmp(Tr* tr, size_t index, int* print_addr)
 		}
 		else
 		{
-			// TODO: check if ICMP message is valid and matches sendto
 			memset(buffer, 0, sizeof(buffer));
 			recvaddrlen = sizeof(recvaddr);
+			// TODO: improve this call to check if we received full packet with the help
+			// of total length in IP header??
 			nbrecv = recvfrom(tr->rawsock, buffer, sizeof(buffer), 0,
 					(struct sockaddr*)&recvaddr, &recvaddrlen);
 			if (nbrecv == -1)
 				return 0;
-			if (gettimeofday(&end, NULL) == -1)
-				return 0;
-			// TODO: add missing timestamp calculation
-			if (!index)
+			icmp_msg = valid_icmp_msg(buffer, nbrecv);
+			if (icmp_msg)
 			{
-				fprintf(stderr, "%3u   %s  xx,xxms", tr->ttl, inet_ntoa(recvaddr.sin_addr));
-				*print_addr = 0;
-			}
-			else
-			{
-				if (*print_addr)
+				if (gettimeofday(&end, NULL) == -1)
+					return 0;
+				// TODO: add missing timestamp calculation
+				if (!index)
 				{
-					fprintf(stderr, "  %s  xx,xxms", inet_ntoa(recvaddr.sin_addr));
+					fprintf(stderr, "%3u   %s  xx,xxms", tr->ttl, inet_ntoa(recvaddr.sin_addr));
 					*print_addr = 0;
 				}
 				else
-					fprintf(stderr, "  xx,xxms");
+				{
+					if (*print_addr)
+					{
+						fprintf(stderr, "  %s  xx,xxms", inet_ntoa(recvaddr.sin_addr));
+						*print_addr = 0;
+					}
+					else
+						fprintf(stderr, "  xx,xxms");
+				}
+				loop = 0;
+				if (icmp_msg == 2)
+					tr->reached_dest = 1;
 			}
-			loop = 0;
 		}
 	}
 	if (index == 2)

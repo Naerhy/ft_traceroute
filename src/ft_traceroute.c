@@ -39,7 +39,7 @@ int main(int argc, char** argv)
 		return exit_traceroute(tr.strerr, &tr);
 	// TODO: replace placeholder number (64) with variable value
 	printf("traceroute to %s (%s), 64 hops max\n", tr.host, tr.host_ipstr);
-	for (uint8_t i = 0; i < tr.hops; i++)
+	for (uint8_t i = 0; i < tr.hops && !tr.reached_dest; i++)
 	{
 		if (!send_udp(&tr))
 			return exit_traceroute(strerror(errno), &tr);
