@@ -33,6 +33,12 @@ typedef struct Tr
 	char const* strerr;
 } Tr;
 
+typedef struct Ts
+{
+	uint64_t whole;
+	uint64_t fract;
+} Ts;
+
 void init_traceroute(Tr* tr);
 int init_sockets(Tr* tr);
 

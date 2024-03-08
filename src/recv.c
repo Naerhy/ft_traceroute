@@ -1,5 +1,20 @@
 #include "ft_traceroute.h"
 
+static Ts convert_ts(double nb)
+{
+	Ts ts;
+
+	ts.whole = (uint64_t)nb;
+	ts.fract = (uint64_t)((nb - ts.whole) * 1000);
+	return ts;
+}
+
+static double timestamp_diff(struct timeval* start, struct timeval* end)
+{
+	return (((double)end->tv_sec * 1000) + ((double)end->tv_usec / 1000))
+			- (((double)start->tv_sec * 1000) + ((double)start->tv_usec / 1000));
+}
+
 static uint16_t sw16(uint16_t v)
 {
 	return (v << 8) | (v >> 8);
@@ -38,6 +53,7 @@ int recv_icmp(Tr* tr, size_t index, int* print_addr)
 	socklen_t recvaddrlen;
 	ssize_t nbrecv;
 	int icmp_msg;
+	Ts ts;
 
 	FD_ZERO(&fds);
 	FD_SET(tr->rawsock, &fds);
@@ -70,26 +86,29 @@ int recv_icmp(Tr* tr, size_t index, int* print_addr)
 					(struct sockaddr*)&recvaddr, &recvaddrlen);
 			if (nbrecv == -1)
 				return 0;
+			if (gettimeofday(&end, NULL) == -1)
+				return 0;
 			icmp_msg = valid_icmp_msg(buffer, nbrecv);
 			if (icmp_msg)
 			{
-				if (gettimeofday(&end, NULL) == -1)
-					return 0;
 				// TODO: add missing timestamp calculation
+				ts = convert_ts(timestamp_diff(&start, &end));
 				if (!index)
 				{
-					fprintf(stderr, "%3u   %s  xx,xxms", tr->ttl, inet_ntoa(recvaddr.sin_addr));
+					fprintf(stderr, "%3u   %s  %lu,%lums", tr->ttl, inet_ntoa(recvaddr.sin_addr),
+							ts.whole, ts.fract);
 					*print_addr = 0;
 				}
 				else
 				{
 					if (*print_addr)
 					{
-						fprintf(stderr, "  %s  xx,xxms", inet_ntoa(recvaddr.sin_addr));
+						fprintf(stderr, "  %s  %lu,%lums", inet_ntoa(recvaddr.sin_addr),
+								ts.whole, ts.fract);
 						*print_addr = 0;
 					}
 					else
-						fprintf(stderr, "  xx,xxms");
+						fprintf(stderr, "  %lu,%lums", ts.whole, ts.fract);
 				}
 				loop = 0;
 				if (icmp_msg == 2)
