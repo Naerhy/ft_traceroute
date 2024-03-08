@@ -2,6 +2,7 @@
 
 void init_traceroute(Tr* tr)
 {
+	tr->pid = getpid();
 	tr->host = NULL;
 	tr->flags = 0;
 	tr->hops = 64;
@@ -10,6 +11,20 @@ void init_traceroute(Tr* tr)
 	tr->rawsock = -1;
 	tr->reached_dest = 0;
 	tr->strerr = NULL;
+}
+
+static int bind_udpsock(int udpsock, uint16_t pid)
+{
+	struct sockaddr_in myaddr;
+
+	myaddr.sin_family = AF_INET;
+	// TODO: check if need to validate pid != reserved linux port
+	myaddr.sin_port = htons(pid);
+	myaddr.sin_addr.s_addr = INADDR_ANY;
+	memset(myaddr.sin_zero, 0, sizeof(myaddr.sin_zero));
+	if (bind(udpsock, (struct sockaddr*)&myaddr, sizeof(myaddr)) == -1)
+		return 0;
+	return 1;
 }
 
 int init_sockets(Tr* tr)
@@ -34,6 +49,11 @@ int init_sockets(Tr* tr)
 	tr->rawsock = socket(hints.ai_family, SOCK_RAW, IPPROTO_ICMP);
 	freeaddrinfo(res);
 	if (tr->udpsock == -1 || tr->rawsock == -1)
+	{
+		tr->strerr = strerror(errno);
+		return 0;
+	}
+	if (!bind_udpsock(tr->udpsock, tr->pid))
 	{
 		tr->strerr = strerror(errno);
 		return 0;

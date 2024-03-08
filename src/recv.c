@@ -15,27 +15,26 @@ static double timestamp_diff(struct timeval* start, struct timeval* end)
 			- (((double)start->tv_sec * 1000) + ((double)start->tv_usec / 1000));
 }
 
-static uint16_t sw16(uint16_t v)
-{
-	return (v << 8) | (v >> 8);
-}
-
-// FIXME: check that identifier in packet is equal to our sent PID
-static int valid_icmp_msg(char* buffer, ssize_t nbrecv)
+static int valid_icmp_msg(char* buffer, ssize_t nbrecv, uint16_t pid)
 {
 	struct ip* ip;
 	struct icmp* icmp;
 	uint8_t hdrlen;
+	uint16_t srcport;
 
 	ip = (struct ip*)buffer;
-	if (nbrecv < IP_HDR_MIN_SIZE || nbrecv < sw16(ip->ip_len))
+	if (nbrecv < IP_HDR_MIN_SIZE || nbrecv != ntohs(ip->ip_len))
 		return 0;
 	hdrlen = ip->ip_hl * 4;
 	if (hdrlen < IP_HDR_MIN_SIZE || hdrlen > IP_HDR_MAX_SIZE
-			|| hdrlen + ICMP_MINLEN > sw16(ip->ip_len) || ip->ip_p != IPPROTO_ICMP)
+			|| hdrlen + ICMP_MINLEN + hdrlen + UDP_HDR_MIN_SIZE > nbrecv
+			|| ip->ip_p != IPPROTO_ICMP)
 		return 0;
 	icmp = (struct icmp*)(buffer + hdrlen);
 	if (icmp->icmp_type != ICMP_TIMXCEED && icmp->icmp_type != ICMP_UNREACH)
+		return 0;
+	srcport = ntohs(*((uint16_t*)(buffer + hdrlen + ICMP_MINLEN + hdrlen)));
+	if (srcport != pid)
 		return 0;
 	return icmp->icmp_type == ICMP_TIMXCEED ? 1 : 2;
 }
@@ -88,10 +87,9 @@ int recv_icmp(Tr* tr, size_t index, int* print_addr)
 				return 0;
 			if (gettimeofday(&end, NULL) == -1)
 				return 0;
-			icmp_msg = valid_icmp_msg(buffer, nbrecv);
+			icmp_msg = valid_icmp_msg(buffer, nbrecv, tr->pid);
 			if (icmp_msg)
 			{
-				// TODO: add missing timestamp calculation
 				ts = convert_ts(timestamp_diff(&start, &end));
 				if (!index)
 				{

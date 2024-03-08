@@ -15,12 +15,15 @@
 #include <sys/types.h>
 #include <unistd.h>
 
+#define UDP_PORT 33434
 #define IP_HDR_MIN_SIZE 20
 #define IP_HDR_MAX_SIZE 60
+#define UDP_HDR_MIN_SIZE 8
 #define HELP (1 << 0)
 
 typedef struct Tr
 {
+	uint16_t pid;
 	char* host;
 	uint8_t flags;
 	uint8_t hops;
