@@ -9,6 +9,7 @@ void init_traceroute(Tr* tr)
 	tr->ttl = 1;
 	tr->udpsock = -1;
 	tr->rawsock = -1;
+	tr->line_index = 1;
 	tr->reached_dest = 0;
 	tr->strerr = NULL;
 }
@@ -48,12 +49,7 @@ int init_sockets(Tr* tr)
 	tr->udpsock = socket(hints.ai_family, hints.ai_socktype, hints.ai_protocol);
 	tr->rawsock = socket(hints.ai_family, SOCK_RAW, IPPROTO_ICMP);
 	freeaddrinfo(res);
-	if (tr->udpsock == -1 || tr->rawsock == -1)
-	{
-		tr->strerr = strerror(errno);
-		return 0;
-	}
-	if (!bind_udpsock(tr->udpsock, tr->pid))
+	if (tr->udpsock == -1 || tr->rawsock == -1 || !bind_udpsock(tr->udpsock, tr->pid))
 	{
 		tr->strerr = strerror(errno);
 		return 0;

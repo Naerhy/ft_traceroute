@@ -19,5 +19,6 @@ int send_udp(Tr* tr)
 			return 0;
 	}
 	tr->ttl++;
+	tr->line_index++;
 	return 1;
 }

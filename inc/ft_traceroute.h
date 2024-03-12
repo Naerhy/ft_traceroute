@@ -21,6 +21,14 @@
 #define UDP_HDR_MIN_SIZE 8
 #define HELP (1 << 0)
 
+// TODO: args
+// -q => nb or probe packets
+// -f => initial ttl
+// -m => max ttl
+// -p => base destination port (still incremented)
+// -w => time in sec to wait for a response
+// -t => set type of service
+
 typedef struct Tr
 {
 	uint16_t pid;
@@ -32,6 +40,7 @@ typedef struct Tr
 	int rawsock;
 	struct sockaddr_in host_addr;
 	char* host_ipstr;
+	uint8_t line_index;
 	int reached_dest;
 	char const* strerr;
 } Tr;
@@ -50,5 +59,7 @@ int send_udp(Tr* tr);
 int recv_icmp(Tr* tr, size_t index, int* print_addr);
 
 void print_help(void);
+void print_timeout(size_t index, uint8_t line_index);
+void print_packet(size_t index, uint8_t line_index, struct in_addr* addr, Ts* ts, int* print_addr);
 
 #endif
