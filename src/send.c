@@ -10,8 +10,8 @@ int send_udp(Tr* tr)
 	if (setsockopt(tr->udpsock, IPPROTO_IP, IP_TTL, &tr->ttl, sizeof(tr->ttl)) == -1)
 		return 0;
 	print_addr = 1;
-	tr->host_addr.sin_port = htons(UDP_PORT + tr->ttl - 1);
-	for (size_t i = 0; i < 3; i++)
+	tr->host_addr.sin_port = htons(tr->destport + tr->line_index - 1);
+	for (uint8_t i = 0; i < tr->nb_packets; i++)
 	{
 		nbsent = sendto(tr->udpsock, msg, strlen(msg) + 1, 0,
 				(struct sockaddr*)&tr->host_addr, sizeof(tr->host_addr));

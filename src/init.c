@@ -6,7 +6,11 @@ void init_traceroute(Tr* tr)
 	tr->host = NULL;
 	tr->flags = 0;
 	tr->hops = 64;
+	tr->nb_packets = 3;
 	tr->ttl = 1;
+	tr->waittime = 3;
+	tr->tos = 0;
+	tr->destport = 33434;
 	tr->udpsock = -1;
 	tr->rawsock = -1;
 	tr->line_index = 1;
@@ -38,7 +42,7 @@ int init_sockets(Tr* tr)
 	hints.ai_family = AF_INET;
 	hints.ai_socktype = SOCK_DGRAM;
 	hints.ai_protocol = IPPROTO_UDP;
-	retgai = getaddrinfo(tr->host, "33434", &hints, &res);
+	retgai = getaddrinfo(tr->host, NULL, &hints, &res);
 	if (retgai)
 	{
 		// FIXME: still reachable leaks in Valgrind
@@ -54,6 +58,8 @@ int init_sockets(Tr* tr)
 		tr->strerr = strerror(errno);
 		return 0;
 	}
+	if (setsockopt(tr->udpsock, IPPROTO_IP, IP_TOS, &tr->tos, sizeof(tr->tos)) == -1)
+		return 0;
 	tr->host_ipstr = inet_ntoa(tr->host_addr.sin_addr);
 	return 1;
 }

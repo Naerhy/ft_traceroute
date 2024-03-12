@@ -39,7 +39,7 @@ static int valid_icmp_msg(char* buffer, ssize_t nbrecv, uint16_t pid)
 	return icmp->icmp_type == ICMP_TIMXCEED ? 1 : 2;
 }
 
-int recv_icmp(Tr* tr, size_t index, int* print_addr)
+int recv_icmp(Tr* tr, uint8_t index, int* print_addr)
 {
 	fd_set fds;
 	struct timeval start;
@@ -57,7 +57,7 @@ int recv_icmp(Tr* tr, size_t index, int* print_addr)
 	FD_SET(tr->rawsock, &fds);
 	if (gettimeofday(&start, NULL) == -1)
 		return 0;
-	timeout.tv_sec = 3;
+	timeout.tv_sec = tr->waittime;
 	timeout.tv_usec = 0;
 	while (1)
 	{
@@ -90,7 +90,7 @@ int recv_icmp(Tr* tr, size_t index, int* print_addr)
 			}
 		}
 	}
-	if (index == 2)
+	if (index == tr->nb_packets - 1)
 		fprintf(stderr, "\n");
 	return 1;
 }
