@@ -4,6 +4,12 @@ void print_help(void)
 {
 	printf("Usage: traceroute [OPTION...] HOST\n");
 	printf("Print the route packets trace to network host.\n\n");
+	printf("  -f NUM                      set initial hop distance, i.e., time-to-live\n");
+	printf("  -m NUM                      set maximal hop count\n");
+	printf("  -p PORT                     use destination PORT port\n");
+	printf("  -q NUM                      send NUM probe packets per hop\n");
+	printf("  -t NUM                      set type of service (TOS) to NUM\n");
+	printf("  -w NUM                      wait NUM seconds for response\n");
 	printf("  -?, --help                  give this help list\n");
 }
 
