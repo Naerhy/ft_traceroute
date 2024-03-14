@@ -20,14 +20,6 @@
 #define UDP_HDR_MIN_SIZE 8
 #define HELP (1 << 0)
 
-// TODO: args
-// -q => nb or probe packets
-// -f => initial ttl
-// -m => max ttl
-// -p => base destination port (still incremented)
-// -w => time in sec to wait for a response
-// -t => set type of service
-
 typedef struct Tr
 {
 	uint16_t pid;
@@ -56,6 +48,8 @@ typedef struct Ts
 
 void init_traceroute(Tr* tr);
 int init_sockets(Tr* tr);
+
+int parse_args(int argc, char** argv, Tr* tr);
 
 int send_udp(Tr* tr);
 

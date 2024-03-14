@@ -11,74 +11,6 @@ static int exit_traceroute(char const* strerr, Tr* tr)
 	return strerr ? 1 : 0;
 }
 
-static int parse_args(int argc, char** argv, Tr* tr)
-{
-	uint32_t value;
-
-	for (int i = 1; i < argc; i++)
-	{
-		if (!strcmp(*(argv + i), "-?") || !strcmp(*(argv + i), "--help"))
-			tr->flags |= HELP;
-		else if (!strcmp(*(argv + i), "-q"))
-		{
-			if (!*(argv + i + 1))
-				return 0;
-			if (!ft_atoi(*(argv + i + 1), &value) || !value || value > 10)
-				return 0;
-			tr->nb_packets = value;
-			i++;
-		}
-		else if (!strcmp(*(argv + i), "-m"))
-		{
-			if (!*(argv + i + 1))
-				return 0;
-			if (!ft_atoi(*(argv + i + 1), &value) || !value || value > 255)
-				return 0;
-			tr->hops = value;
-			i++;
-		}
-		else if (!strcmp(*(argv + i), "-f"))
-		{
-			if (!*(argv + i + 1))
-				return 0;
-			if (!ft_atoi(*(argv + i + 1), &value) || !value || value > 255)
-				return 0;
-			tr->ttl = value;
-			i++;
-		}
-		else if (!strcmp(*(argv + i), "-w"))
-		{
-			if (!*(argv + i + 1))
-				return 0;
-			if (!ft_atoi(*(argv + i + 1), &value) || value > 60)
-				return 0;
-			tr->waittime = value;
-			i++;
-		}
-		else if (!strcmp(*(argv + i), "-t"))
-		{
-			if (!*(argv + i + 1))
-				return 0;
-			if (!ft_atoi(*(argv + i + 1), &value) || value > 255)
-				return 0;
-			tr->tos = value;
-			i++;
-		}
-		else if (!strcmp(*(argv + i), "-p"))
-		{
-			if (!*(argv + i + 1))
-				return 0;
-			if (!ft_atoi(*(argv + i + 1), &value) || !value || value > 65535)
-				return 0;
-			tr->destport = value;
-			i++;
-		}
-		else
-			tr->host = *(argv + i);
-	}
-	return 1;
-}
-
 int main(int argc, char** argv)
 {
 	Tr tr;
@@ -95,7 +27,6 @@ int main(int argc, char** argv)
 		return exit_traceroute("Missing host operand", &tr);
 	if (!init_sockets(&tr))
 		return exit_traceroute(tr.strerr, &tr);
-	// TODO: replace placeholder number (64) with variable value
 	printf("traceroute to %s (%s), %u hops max\n", tr.host, tr.host_ipstr, tr.hops);
 	for (uint8_t i = 0; i < tr.hops && !tr.reached_dest; i++)
 	{
