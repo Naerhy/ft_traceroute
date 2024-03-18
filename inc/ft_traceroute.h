@@ -19,6 +19,7 @@
 #define IP_HDR_MAX_SIZE 60
 #define UDP_HDR_MIN_SIZE 8
 #define HELP (1 << 0)
+#define DNS (1 << 1)
 
 typedef struct Tr
 {
@@ -57,8 +58,10 @@ int recv_icmp(Tr* tr, uint8_t index, int* print_addr);
 
 void print_help(void);
 void print_timeout(size_t index, uint8_t line_index);
-void print_packet(size_t index, uint8_t line_index, struct in_addr* addr, Ts* ts, int* print_addr);
+void print_packet(size_t index, uint8_t line_index, struct in_addr* addr,
+		Ts* ts, int* print_addr, char const* host);
 
+size_t ft_strlen(char const* s);
 int ft_atoi(char const* s, uint32_t* res);
 
 #endif

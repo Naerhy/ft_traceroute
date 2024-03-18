@@ -1,6 +1,6 @@
 #include "ft_traceroute.h"
 
-static size_t ft_strlen(char const* s)
+size_t ft_strlen(char const* s)
 {
 	size_t len;
 

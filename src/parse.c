@@ -44,6 +44,8 @@ int parse_args(int argc, char** argv, Tr* tr)
 	{
 		if (!strcmp(*(argv + i), "-?") || !strcmp(*(argv + i), "--help"))
 			tr->flags |= HELP;
+		else if (!strcmp(*(argv + i), "--dns"))
+			tr->flags |= DNS;
 		else if (!strcmp(*(argv + i), "-q") || !strcmp(*(argv + i), "-m")
 				|| !strcmp(*(argv + i), "-f") || !strcmp(*(argv + i), "-w")
 				|| !strcmp(*(argv + i), "-t") || !strcmp(*(argv + i), "-p"))

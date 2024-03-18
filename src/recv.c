@@ -52,6 +52,7 @@ int recv_icmp(Tr* tr, uint8_t index, int* print_addr)
 	ssize_t nbrecv;
 	int icmp_msg;
 	Ts ts;
+	char host[1024];
 
 	FD_ZERO(&fds);
 	FD_SET(tr->rawsock, &fds);
@@ -81,7 +82,15 @@ int recv_icmp(Tr* tr, uint8_t index, int* print_addr)
 			if (icmp_msg)
 			{
 				ts = convert_ts(timestamp_diff(&start, &end));
-				print_packet(index, tr->line_index, &recvaddr.sin_addr, &ts, print_addr);
+				memset(host, 0, sizeof(host));
+				if (tr->flags & DNS)
+				{
+					if (getnameinfo((struct sockaddr*)&recvaddr, sizeof(recvaddr), host,
+							sizeof(host), NULL, 0, 0))
+						return 0;
+				}
+				print_packet(index, tr->line_index, &recvaddr.sin_addr, &ts, print_addr,
+						ft_strlen(host) ? host : NULL);
 				if (icmp_msg == 2)
 					tr->reached_dest = 1;
 				break;
