@@ -73,8 +73,6 @@ int recv_icmp(Tr* tr, uint8_t index, int* print_addr)
 		{
 			memset(buffer, 0, sizeof(buffer));
 			recvaddrlen = sizeof(recvaddr);
-			// TODO: improve this call to check if we received full packet with the help
-			// of total length in IP header??
 			nbrecv = recvfrom(tr->rawsock, buffer, sizeof(buffer), 0,
 					(struct sockaddr*)&recvaddr, &recvaddrlen);
 			if (nbrecv == -1 || gettimeofday(&end, NULL) == -1)

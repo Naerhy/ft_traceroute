@@ -23,7 +23,6 @@ static int bind_udpsock(int udpsock, uint16_t pid)
 	struct sockaddr_in myaddr;
 
 	myaddr.sin_family = AF_INET;
-	// TODO: check if need to validate pid != reserved linux port
 	myaddr.sin_port = htons(pid);
 	myaddr.sin_addr.s_addr = INADDR_ANY;
 	memset(myaddr.sin_zero, 0, sizeof(myaddr.sin_zero));
@@ -45,7 +44,6 @@ int init_sockets(Tr* tr)
 	retgai = getaddrinfo(tr->host, NULL, &hints, &res);
 	if (retgai)
 	{
-		// FIXME: still reachable leaks in Valgrind
 		tr->strerr = gai_strerror(retgai);
 		return 0;
 	}
