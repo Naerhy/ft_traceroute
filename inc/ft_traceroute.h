@@ -18,27 +18,29 @@
 #define IP_HDR_MIN_SIZE 20
 #define IP_HDR_MAX_SIZE 60
 #define UDP_HDR_MIN_SIZE 8
-#define HELP (1 << 0)
-#define DNS (1 << 1)
+
+typedef struct Opt
+{
+	uint8_t max_probes;
+	uint16_t ttl;
+	uint16_t max_ttl;
+	uint8_t wait_time;
+	uint8_t tos;
+	uint16_t dest_port;
+	uint8_t help;
+} Opt;
 
 typedef struct Tr
 {
+	Opt opt;
 	uint16_t pid;
 	char* host;
-	uint8_t flags;
-	uint8_t hops;
-	uint8_t nb_packets;
-	uint8_t ttl;
-	uint8_t waittime;
-	uint8_t tos;
-	uint16_t destport;
-	int udpsock;
-	int rawsock;
 	struct sockaddr_in host_addr;
 	char* host_ipstr;
-	uint8_t line_index;
-	int reached_dest;
-	char const* strerr;
+	int udpsock;
+	int rawsock;
+	int end;
+	int gai_errcode;
 } Tr;
 
 typedef struct Ts
@@ -52,14 +54,12 @@ int init_sockets(Tr* tr);
 
 int parse_args(int argc, char** argv, Tr* tr);
 
-int send_udp(Tr* tr);
-
-int recv_icmp(Tr* tr, uint8_t index, int* print_addr);
+int recv_icmp(Tr* tr, uint8_t probe, struct sockaddr_in* previous_recvaddr);
 
 void print_help(void);
-void print_timeout(size_t index, uint8_t line_index);
-void print_packet(size_t index, uint8_t line_index, struct in_addr* addr,
-		Ts* ts, int* print_addr, char const* host);
+void print_timeout(uint8_t probe, uint16_t ttl);
+void print_packet(uint8_t probe, uint16_t ttl, struct in_addr* previous_addr, struct in_addr* addr,
+		Ts* ts, char const* host);
 
 size_t ft_strlen(char const* s);
 int ft_atoi(char const* s, uint32_t* res);

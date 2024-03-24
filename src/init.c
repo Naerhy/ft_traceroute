@@ -2,20 +2,19 @@
 
 void init_traceroute(Tr* tr)
 {
+	tr->opt.max_probes = 3;
+	tr->opt.ttl = 1;
+	tr->opt.max_ttl = 30;
+	tr->opt.wait_time = 3;
+	tr->opt.tos = 0;
+	tr->opt.dest_port = 33434;
+	tr->opt.help = 0;
 	tr->pid = getpid();
 	tr->host = NULL;
-	tr->flags = 0;
-	tr->hops = 64;
-	tr->nb_packets = 3;
-	tr->ttl = 1;
-	tr->waittime = 3;
-	tr->tos = 0;
-	tr->destport = 33434;
 	tr->udpsock = -1;
 	tr->rawsock = -1;
-	tr->line_index = 1;
-	tr->reached_dest = 0;
-	tr->strerr = NULL;
+	tr->end = 0;
+	tr->gai_errcode = 0;
 }
 
 static int bind_udpsock(int udpsock, uint16_t pid)
@@ -44,7 +43,7 @@ int init_sockets(Tr* tr)
 	retgai = getaddrinfo(tr->host, NULL, &hints, &res);
 	if (retgai)
 	{
-		tr->strerr = gai_strerror(retgai);
+		tr->gai_errcode = retgai;
 		return 0;
 	}
 	memcpy(&tr->host_addr, res->ai_addr, sizeof(struct sockaddr_in));
@@ -52,11 +51,8 @@ int init_sockets(Tr* tr)
 	tr->rawsock = socket(hints.ai_family, SOCK_RAW, IPPROTO_ICMP);
 	freeaddrinfo(res);
 	if (tr->udpsock == -1 || tr->rawsock == -1 || !bind_udpsock(tr->udpsock, tr->pid))
-	{
-		tr->strerr = strerror(errno);
 		return 0;
-	}
-	if (setsockopt(tr->udpsock, IPPROTO_IP, IP_TOS, &tr->tos, sizeof(tr->tos)) == -1)
+	if (setsockopt(tr->udpsock, IPPROTO_IP, IP_TOS, &tr->opt.tos, sizeof(tr->opt.tos)) == -1)
 		return 0;
 	tr->host_ipstr = inet_ntoa(tr->host_addr.sin_addr);
 	return 1;

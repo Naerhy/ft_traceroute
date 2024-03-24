@@ -39,7 +39,7 @@ static int valid_icmp_msg(char* buffer, ssize_t nbrecv, uint16_t pid)
 	return icmp->icmp_type == ICMP_TIMXCEED ? 1 : 2;
 }
 
-int recv_icmp(Tr* tr, uint8_t index, int* print_addr)
+int recv_icmp(Tr* tr, uint8_t probe, struct sockaddr_in* previous_recvaddr)
 {
 	fd_set fds;
 	struct timeval start;
@@ -58,7 +58,7 @@ int recv_icmp(Tr* tr, uint8_t index, int* print_addr)
 	FD_SET(tr->rawsock, &fds);
 	if (gettimeofday(&start, NULL) == -1)
 		return 0;
-	timeout.tv_sec = tr->waittime;
+	timeout.tv_sec = tr->opt.wait_time;
 	timeout.tv_usec = 0;
 	while (1)
 	{
@@ -67,15 +67,14 @@ int recv_icmp(Tr* tr, uint8_t index, int* print_addr)
 			return 0;
 		else if (!retselect)
 		{
-			print_timeout(index, tr->line_index);
+			print_timeout(probe, tr->opt.ttl);
 			break;
 		}
 		else
 		{
 			memset(buffer, 0, sizeof(buffer));
 			recvaddrlen = sizeof(recvaddr);
-			nbrecv = recvfrom(tr->rawsock, buffer, sizeof(buffer), 0,
-					(struct sockaddr*)&recvaddr, &recvaddrlen);
+			nbrecv = recvfrom(tr->rawsock, buffer, sizeof(buffer), 0, (struct sockaddr*)&recvaddr, &recvaddrlen);
 			if (nbrecv == -1 || gettimeofday(&end, NULL) == -1)
 				return 0;
 			icmp_msg = valid_icmp_msg(buffer, nbrecv, tr->pid);
@@ -83,21 +82,18 @@ int recv_icmp(Tr* tr, uint8_t index, int* print_addr)
 			{
 				ts = convert_ts(timestamp_diff(&start, &end));
 				memset(host, 0, sizeof(host));
-				if (tr->flags & DNS)
-				{
-					if (getnameinfo((struct sockaddr*)&recvaddr, sizeof(recvaddr), host,
-							sizeof(host), NULL, 0, 0))
-						return 0;
-				}
-				print_packet(index, tr->line_index, &recvaddr.sin_addr, &ts, print_addr,
-						ft_strlen(host) ? host : NULL);
+				if (getnameinfo((struct sockaddr*)&recvaddr, recvaddrlen, host, sizeof(host), NULL, 0, 0))
+					return 0;
+				print_packet(probe, tr->opt.ttl, &previous_recvaddr->sin_addr, &recvaddr.sin_addr,
+						&ts, host);
 				if (icmp_msg == 2)
-					tr->reached_dest = 1;
+					tr->end = 1;
+				memcpy(previous_recvaddr, &recvaddr, recvaddrlen);
 				break;
 			}
 		}
 	}
-	if (index == tr->nb_packets - 1)
+	if (probe == tr->opt.max_probes - 1)
 		fprintf(stderr, "\n");
 	return 1;
 }

@@ -10,44 +10,27 @@ void print_help(void)
 	printf("  -q NUM                      send NUM probe packets per hop\n");
 	printf("  -t NUM                      set type of service (TOS) to NUM\n");
 	printf("  -w NUM                      wait NUM seconds for response\n");
-	printf("  --dns                       print domain names of received messages\n");
 	printf("  -?, --help                  give this help list\n");
 }
 
-void print_timeout(size_t index, uint8_t line_index)
+void print_timeout(uint8_t probe, uint16_t ttl)
 {
-	if (!index)
-		fprintf(stderr, "%3u   *", line_index);
+	if (!probe)
+		fprintf(stderr, "%3u   * ", ttl);
 	else
-		fprintf(stderr, "  *");
+		fprintf(stderr, " * ");
 }
 
-void print_packet(size_t index, uint8_t line_index, struct in_addr* addr,
-		Ts* ts, int* print_addr, char const* host)
+void print_packet(uint8_t probe, uint16_t ttl, struct in_addr* previous_addr, struct in_addr* addr,
+		Ts* ts, char const* host)
 {
-	if (!index)
-	{
-		if (host)
-			fprintf(stderr, "%3u   %s (%s)  %lu,%lums", line_index, inet_ntoa(*addr), host,
-					ts->whole, ts->fract);
-		else
-			fprintf(stderr, "%3u   %s  %lu,%lums", line_index, inet_ntoa(*addr),
-					ts->whole, ts->fract);
-		*print_addr = 0;
-	}
+	if (!probe)
+		fprintf(stderr, "%3u   %s (%s) %lu,%lums ", ttl, host, inet_ntoa(*addr), ts->whole, ts->fract);
 	else
 	{
-		if (*print_addr)
-		{
-			if (host)
-				fprintf(stderr, "  %s (%s)  %lu,%lums", inet_ntoa(*addr), host,
-						ts->whole, ts->fract);
-			else
-				fprintf(stderr, "  %s  %lu,%lums", inet_ntoa(*addr),
-						ts->whole, ts->fract);
-			*print_addr = 0;
-		}
+		if (previous_addr->s_addr != addr->s_addr)
+			fprintf(stderr, " %s (%s) %lu,%lums ", host, inet_ntoa(*addr), ts->whole, ts->fract);
 		else
-			fprintf(stderr, "  %lu,%lums", ts->whole, ts->fract);
+			fprintf(stderr, " %lu,%lums ", ts->whole, ts->fract);
 	}
 }
