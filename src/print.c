@@ -21,8 +21,8 @@ void print_timeout(uint8_t probe, uint16_t ttl)
 		fprintf(stderr, " * ");
 }
 
-void print_packet(uint8_t probe, uint16_t ttl, struct in_addr* previous_addr, struct in_addr* addr,
-		Ts* ts, char const* host)
+void print_packet(uint8_t probe, uint16_t ttl, struct in_addr* previous_addr,
+		struct in_addr* addr, Ts* ts, char const* host)
 {
 	if (!probe)
 		fprintf(stderr, "%3u   %s (%s) %lu,%lums ", ttl, host, inet_ntoa(*addr), ts->whole, ts->fract);

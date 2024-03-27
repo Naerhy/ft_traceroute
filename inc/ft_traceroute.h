@@ -58,8 +58,8 @@ int recv_icmp(Tr* tr, uint8_t probe, struct sockaddr_in* previous_recvaddr);
 
 void print_help(void);
 void print_timeout(uint8_t probe, uint16_t ttl);
-void print_packet(uint8_t probe, uint16_t ttl, struct in_addr* previous_addr, struct in_addr* addr,
-		Ts* ts, char const* host);
+void print_packet(uint8_t probe, uint16_t ttl, struct in_addr* previous_addr,
+		struct in_addr* addr, Ts* ts, char const* host);
 
 size_t ft_strlen(char const* s);
 int ft_atoi(char const* s, uint32_t* res);
